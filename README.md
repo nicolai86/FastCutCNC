@@ -6,8 +6,12 @@ Scripts related to my FastCutCNC &lt;> SimCNC conversion
 
 A basic post-processor for Fusion 360, that works well with my FastCutCNC Icon Elite table.
 
-Notable support is G41/ G42 for cut path compensation via SimCNC.
-Pierce height and cut height are ignored as these need to be configured in SimCNC.
+Notable features: 
+- supports G41/ G42 for cut path compensation via SimCNC. Requires SimCNC 3.5 or later.
+- Supports disabling THC for cut paths, so eg circles can be cut without it
+- Supports slowing down via FRO, so eg circles can be cut at 60% speed
+
+Note that Fusion 360 pierce height, cut height and kerf settings are ignored as these need to be configured in SimCNC.
 
 ![Post Processor Options](./Fusion360/post-options.png)
 ![Cut Path Options](./Fusion360/cut-options.png)
