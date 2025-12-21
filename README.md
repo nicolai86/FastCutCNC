@@ -10,6 +10,7 @@ Notable features:
 - supports G41/ G42 for cut path compensation via SimCNC. Requires SimCNC 3.5 or later.
 - Supports disabling THC for cut paths, so eg circles can be cut without it
 - Supports slowing down via FRO, so eg circles can be cut at 60% speed
+- Supports both imperial and metric documents, via G20/ G21.
 
 Note that Fusion 360 pierce height, cut height and kerf settings are ignored as these need to be configured in SimCNC.
 
