@@ -516,6 +516,8 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
     }
 
     if (getCircularPlane() == PLANE_XY) {
+        iOutput.reset();
+        jOutput.reset();
         writeBlock(
             gPlaneModal.format(17),
             gMotionModal.format(clockwise ? 2 : 3),

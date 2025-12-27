@@ -16,3 +16,7 @@ Note that Fusion 360 pierce height, cut height and kerf settings are ignored as 
 
 ![Post Processor Options](./Fusion360/post-options.png)
 ![Cut Path Options](./Fusion360/cut-options.png)
+
+## SimCNC
+
+Scripts contain a number of useful-to-me python scripts I use in SimCNC very frequently.
