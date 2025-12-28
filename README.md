@@ -20,3 +20,12 @@ Note that Fusion 360 pierce height, cut height and kerf settings are ignored as 
 ## SimCNC
 
 Scripts contain a number of useful-to-me python scripts I use in SimCNC very frequently.
+
+### frame.py
+
+Given arbitrary G-code, calculate the minimum bounding rectangle (frame) that contains all shapes,
+and generate G-code to perform a rectangular move outlining this frame.
+
+Handles G0, G1, G2, G3, G90, G91. Assumes IJ for arcs (not R).
+
+I use this when cutting in scrape to ensure I have enough steel to cut on.
