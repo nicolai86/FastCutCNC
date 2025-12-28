@@ -20,6 +20,7 @@ Note that Fusion 360 pierce height, cut height and kerf settings are ignored as 
 ## SimCNC
 
 Scripts contain a number of useful-to-me python scripts I use in SimCNC very frequently.
+These can be easily integrated in the UI via Run Script customizations.
 
 ### frame.py
 
