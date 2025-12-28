@@ -11,26 +11,26 @@ def calculate_frame_and_outline(gcode):
     lines = gcode.splitlines()
     current_x = 0.0
     current_y = 0.0
-    min_x = float("inf")
-    max_x = float("-inf")
-    min_y = float("inf")
-    max_y = float("-inf")
+    min_x = float('inf')
+    max_x = float('-inf')
+    min_y = float('inf')
+    max_y = float('-inf')
     move_mode = 0  # 0: G0, 1: G1, 2: G2, 3: G3
     pos_mode = 90  # 90: absolute, 91: relative
     units = None
 
     for line in lines:
-        line = line.upper().split(";")[0].strip()  # Remove comments
+        line = line.upper().split(';')[0].strip()  # Remove comments
         if not line:
             continue
-        words = re.findall(r"([A-Z])(-?\d*\.?\d+)", line)
+        words = re.findall(r'([A-Z])(-?\d*\.?\d+)', line)
         target_x = None
         target_y = None
         i = None
         j = None
         for letter, value in words:
             val = float(value)
-            if letter == "G":
+            if letter == 'G':
                 gval = int(val)
                 if gval in [0, 1, 2, 3]:
                     move_mode = gval
@@ -42,13 +42,13 @@ def calculate_frame_and_outline(gcode):
                     units = 20
                 elif gval == 21:
                     units = 21
-            elif letter == "X":
+            elif letter == 'X':
                 target_x = val
-            elif letter == "Y":
+            elif letter == 'Y':
                 target_y = val
-            elif letter == "I":
+            elif letter == 'I':
                 i = val
-            elif letter == "J":
+            elif letter == 'J':
                 j = val
             # Ignore other parameters like Z, F, etc.
 
@@ -57,16 +57,8 @@ def calculate_frame_and_outline(gcode):
             continue
 
         # Compute absolute target positions
-        tx = (
-            (current_x + target_x if target_x is not None else current_x)
-            if pos_mode == 91
-            else (target_x if target_x is not None else current_x)
-        )
-        ty = (
-            (current_y + target_y if target_y is not None else current_y)
-            if pos_mode == 91
-            else (target_y if target_y is not None else current_y)
-        )
+        tx = (current_x + target_x if target_x is not None else current_x) if pos_mode == 91 else (target_x if target_x is not None else current_x)
+        ty = (current_y + target_y if target_y is not None else current_y) if pos_mode == 91 else (target_y if target_y is not None else current_y)
 
         if move_mode in [0, 1]:  # Linear or rapid move
             # Update bounding box with start and end points
@@ -80,7 +72,7 @@ def calculate_frame_and_outline(gcode):
             # I J are always incremental from current position, regardless of G90/G91
             cx = current_x + i
             cy = current_y + j
-            is_cw = move_mode == 2
+            is_cw = (move_mode == 2)
 
             # Update with start and end points
             min_x = min(min_x, current_x, tx)
@@ -89,14 +81,14 @@ def calculate_frame_and_outline(gcode):
             max_y = max(max_y, current_y, ty)
 
             # Calculate radius
-            r = math.sqrt((current_x - cx) ** 2 + (current_y - cy) ** 2)
+            r = math.sqrt((current_x - cx)**2 + (current_y - cy)**2)
 
             # Extreme points and their angles (0 to 2pi)
             extremes = [
-                (cx + r, cy, 0.0),  # right (east)
-                (cx, cy + r, math.pi / 2),  # up (north)
-                (cx - r, cy, math.pi),  # left (west)
-                (cx, cy - r, 3 * math.pi / 2),  # down (south)
+                (cx + r, cy, 0.0),                # right (east)
+                (cx, cy + r, math.pi / 2),       # up (north)
+                (cx - r, cy, math.pi),            # left (west)
+                (cx, cy - r, 3 * math.pi / 2)    # down (south)
             ]
 
             start_angle = math.atan2(current_y - cy, current_x - cx) % (2 * math.pi)
@@ -126,13 +118,14 @@ def calculate_frame_and_outline(gcode):
         current_y = ty
 
     # If no movements, default to 0
-    if min_x == float("inf"):
+    if min_x == float('inf'):
         min_x = max_x = min_y = max_y = 0.0
 
     units_command = "G21\n" if units == 21 else "G20\n" if units == 20 else ""
     # Generate outline G-code (move Z to homing height, rapid to start, then linear moves)
     outline_gcode = (
-        units_command + "G90 (units from loaded gcode)\n"
+        units_command +
+        "G90 (units from loaded gcode)\n"
         f"G0 X{min_x:.3f} Y{min_y:.3f}\n"
         f"G1 X{max_x:.3f} Y{min_y:.3f}\n"
         f"G1 X{max_x:.3f} Y{max_y:.3f}\n"
@@ -140,7 +133,6 @@ def calculate_frame_and_outline(gcode):
         f"G1 X{min_x:.3f} Y{min_y:.3f}\n"
     )
     return outline_gcode, units
-
 
 # SimCNC script to read loaded G-code and execute outline
 try:
@@ -153,31 +145,27 @@ try:
         feedrate = float("2000")
     else:
         feedrate = float(feedrate)
-
+    
     # Get the file path from the UI label (assuming default widget name 'lbFileName' displays the full path)
     file_path = gui.lbGCodeName.getText()
-
+    
     if not file_path:
         print("No G-code file loaded or widget not found.")
     else:
-        with open(file_path, "r") as f:
+        with open(file_path, 'r') as f:
             gcode = f.read()
-
+       
         outline, units = calculate_frame_and_outline(gcode)
-        if units == 21:  # mm
+        if units == 21: # mm
             feedrate = feedrate * 25.4
         outline = outline.replace("G1 ", f"G1 F{feedrate:.1f} ")
         # Add postamble to move back to original XY position and M30
-        outline += (
-            f"G0 X{pos[0]:.3f} Y{pos[1]:.3f}\n#1000={original_feedrate} M221\nM30\n"
-        )
+        outline += f"G0 X{pos[0]:.3f} Y{pos[1]:.3f}\n#1000={original_feedrate} M221\nM30\n"
         print(outline)
         # Execute the outline G-code in SimCNC
         d.executeGCodeList(outline.splitlines())
-
+        
 except AttributeError:
-    print(
-        "GUI widget 'lbFileName' not found. Ensure the screen has a label with that name connected to 'GCode file path' signal."
-    )
+    print("GUI widget 'lbFileName' not found. Ensure the screen has a label with that name connected to 'GCode file path' signal.")
 except Exception as e:
     print(f"Error: {e}")
