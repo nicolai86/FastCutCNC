@@ -123,6 +123,13 @@ properties = {
         value: false,
         scope: "operation"
     },
+    usePeckPierce: {
+        title: "Use Peck Pierce Mode",
+        description: "Ignore small circles and peck pierce at center instead.",
+        type: "boolean",
+        value: false,
+        scope: "operation"
+    }
 };
 // formats
 var gFormat = createFormat({
@@ -247,14 +254,14 @@ function writeWords2(prefix) {
 }
 
 function writeBlock() {
-    if (properties.showSequenceNumbers.value) {
+    if (getProperty('showSequenceNumbers')) {
         if (arguments.length > 0) {
             var words = [];
             for (var i = 0; i < arguments.length; ++i) {
                 words.push(arguments[i]);
             }
             writeWords2("N" + sequenceNumber, words);
-            sequenceNumber += properties.sequenceNumberIncrement.value;
+            sequenceNumber += getProperty('showSequenceNumbers');
         }
     } else {
         writeWords.apply(null, arguments);
@@ -312,6 +319,8 @@ function writeM220(value) {
 
 function onSection() {
     firstRapidAfterSection = true;
+    lastPierceCx = undefined;
+    lastPierceCy = undefined;
 
     if (hasParameter("operation-comment")) {
         var comment = getParameter("operation-comment");
@@ -344,8 +353,12 @@ function onParameter(name, value) {
     // TODO: are any of these useful?
 }
 
+var powerActive = false;
+
 function onPower(power) {
     slowDown();
+
+    powerActive = power;
 
     var froValue = currentSection.properties.froOverride;
     var applyFRO = (froValue !== undefined && froValue != 100);
@@ -417,6 +430,10 @@ function onRapid(_x, _y, _z) {
         firstRapidAfterSection = false;
         return;
     }
+    if (currentSection.properties.usePeckPierce && powerActive) {
+        return;
+    }
+
     var x = xOutput.format(_x);
     var y = yOutput.format(_y);
     var z = zOutput.format(_z);
@@ -446,6 +463,11 @@ function slowDown() {
 
 function onLinear(x, y, z, feed) {
     slowDown();
+
+    if (currentSection.properties.usePeckPierce && powerActive) {
+        return;
+    }
+
     var _x = xOutput.format(x);
     var _y = yOutput.format(y);
     var _z = zOutput.format(z);
@@ -499,8 +521,29 @@ function onLinear(x, y, z, feed) {
     }
 }
 
+var lastPierceCx = undefined;
+var lastPierceCy = undefined;
+
+function onCCWCircle() {
+    if (currentSection.properties.usePeckPierce && powerActive) {
+        return;
+    }
+}
+
 function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
     slowDown();
+
+    // No comp for piercing
+    if (currentSection.properties.usePeckPierce && powerActive) {
+        return;
+    }
+
+    // Fallback to standard circular move if not peck piercing
+    if (pendingRadiusCompensation >= 0) {
+        error(localize("Radius compensation cannot be activated/deactivated for a circular move."));
+        return;
+    }
+
     var start = getCurrentPosition();
 
     if (isFullCircle()) {
