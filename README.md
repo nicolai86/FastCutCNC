@@ -11,6 +11,7 @@ Notable features:
 - Supports disabling THC for cut paths, so eg circles can be cut without it
 - Supports slowing down via FRO, so eg circles can be cut at 60% speed, via custom M220 macro
 - Supports both imperial and metric documents, via G20/ G21.
+- Supports peck-pierce for circles, via cutting path option
 
 Note that Fusion 360 pierce height, cut height and kerf settings are ignored as these need to be configured in SimCNC.
 
