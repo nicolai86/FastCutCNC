@@ -190,7 +190,7 @@ var gUnitModal = createModal({}, gFormat);   // G20 - G21
 var gCompensationModal = createModal({}, gFormat); // G40-G42
 var gWorkModal = createModal({}, gFormat); // G54 - ...
 var gPlaneModal = createModal({}, gFormat);
-var sequenceNumber = getProperty('sequenceNumberStart');
+var sequenceNumber;
 var pendingRadiusCompensation = -1;
 var firstRapidAfterSection = false;
 
@@ -260,8 +260,8 @@ function writeBlock() {
             for (var i = 0; i < arguments.length; ++i) {
                 words.push(arguments[i]);
             }
-            writeWords2("N" + sequenceNumber, words);
-            sequenceNumber += getProperty('showSequenceNumbers');
+            writeWords2("N" + sequenceNumber, ...words);
+            sequenceNumber += getProperty('sequenceNumberIncrement');
         }
     } else {
         writeWords.apply(null, arguments);
@@ -273,6 +273,7 @@ function writeComment(text) {
 }
 
 function onOpen() {
+    sequenceNumber = getProperty('sequenceNumberStart');
     // absolute coordinates
     writeBlock(gAbsIncModal.format(90));
     // units
