@@ -129,6 +129,13 @@ properties = {
         type: "boolean",
         value: false,
         scope: "operation"
+    },
+    pauseAfterOperation: {
+        title: "Pause after operation",
+        description: "Insert M00 (program stop) after this operation. Resume by pressing Run/Cycle Start in SimCNC.",
+        type: "boolean",
+        value: false,
+        scope: "operation"
     }
 };
 // formats
@@ -582,6 +589,9 @@ function onSectionEnd() {
     }
     gMotionModal.reset();
     writeM220(getProperty('defaultFeedRateOverride'));
+    if (currentSection.properties.pauseAfterOperation) {
+        writeBlock(mFormat.format(0));
+    }
 }
 
 function onClose() {
